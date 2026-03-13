@@ -50,7 +50,7 @@ public class Parser {
         }
 
         consume(TokenType.SEMICOLON, "Ожидается ';' после объявления переменной.");
-        return new VarStatement(name.value, initializer);
+        return new VarStatement(name.value, initializer, name.line, name.column);
     }
 
     private Statement parseIfStatement() {

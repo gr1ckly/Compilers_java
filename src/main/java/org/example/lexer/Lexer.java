@@ -83,12 +83,14 @@ public class Lexer {
             result.add(tokenizeOperatorOrPunctuation());
         }
 
-        result.add(new Token(TokenType.EOF, "\0", position));
+        result.add(new Token(TokenType.EOF, "\0", position, line, column));
         return result;
     }
 
     private Token tokenizeNumber() {
         int start = position;
+        int startLine = line;
+        int startColumn = column;
 
         while (Character.isDigit(peek())) {
             column++;
@@ -96,11 +98,13 @@ public class Lexer {
         }
 
         String value = input.substring(start, position);
-        return new Token(TokenType.NUMBER, value, start);
+        return new Token(TokenType.NUMBER, value, start, startLine, startColumn);
     }
 
     private Token tokenizeWord() {
         int start = position;
+        int startLine = line;
+        int startColumn = column;
 
         while (Character.isLetterOrDigit(peek())) {
             column++;
@@ -111,11 +115,12 @@ public class Lexer {
 
         TokenType type = KEYWORDS.getOrDefault(word, TokenType.ID);
 
-        return new Token(type, word, start);
+        return new Token(type, word, start, startLine, startColumn);
     }
 
     private Token tokenizeOperatorOrPunctuation() throws Exception {
         int start = position;
+        int startLine = line;
         int startColumn = column;
 
         if (position + 1 < length) {
@@ -124,7 +129,7 @@ public class Lexer {
                 column += 2;
                 next();
                 next();
-                return new Token(OPERATORS.get(twoChars), twoChars, start);
+                return new Token(OPERATORS.get(twoChars), twoChars, start, startLine, startColumn);
             }
         }
 
@@ -132,7 +137,7 @@ public class Lexer {
         if (OPERATORS.containsKey(oneChar)) {
             column++;
             next();
-            return new Token(OPERATORS.get(oneChar), oneChar, start);
+            return new Token(OPERATORS.get(oneChar), oneChar, start, startLine, startColumn);
         }
 
         char badChar = peek();
