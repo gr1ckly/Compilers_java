@@ -75,6 +75,11 @@ public class Lexer {
                 continue;
             }
 
+            if (current == '"') {
+                result.add(tokenizeString());
+                continue;
+            }
+
             if (Character.isLetter(current)) {
                 result.add(tokenizeWord());
                 continue;
@@ -118,6 +123,58 @@ public class Lexer {
         return new Token(type, word, start, startLine, startColumn);
     }
 
+    private Token tokenizeString() throws Exception {
+        int start = position;
+        int startLine = line;
+        int startColumn = column;
+
+        next();
+        column++;
+
+        StringBuilder value = new StringBuilder();
+
+        while (position < length) {
+            char current = peek();
+
+            if (current == '"') {
+                next();
+                column++;
+                return new Token(TokenType.STRING, value.toString(), start, startLine, startColumn);
+            }
+
+            if (current == '\n' || current == '\r') {
+                throw new Exception(String.format(
+                    "[Lexer Error] Unterminated string at line %d, column %d",
+                    startLine, startColumn
+                ));
+            }
+
+            if (current == '\\') {
+                next();
+                column++;
+
+                if (position >= length) {
+                    break;
+                }
+
+                char escaped = peek();
+                value.append(resolveEscape(escaped));
+                next();
+                column++;
+                continue;
+            }
+
+            value.append(current);
+            next();
+            column++;
+        }
+
+        throw new Exception(String.format(
+            "[Lexer Error] Unterminated string at line %d, column %d",
+            startLine, startColumn
+        ));
+    }
+
     private Token tokenizeOperatorOrPunctuation() throws Exception {
         int start = position;
         int startLine = line;
@@ -159,5 +216,16 @@ public class Lexer {
             return '\0';
         }
         return input.charAt(position++);
+    }
+
+    private char resolveEscape(char escaped) {
+        return switch (escaped) {
+            case 'n' -> '\n';
+            case 'r' -> '\r';
+            case 't' -> '\t';
+            case '"' -> '"';
+            case '\\' -> '\\';
+            default -> escaped;
+        };
     }
 }

@@ -117,8 +117,9 @@ public class Parser {
             }
 
             throw new RuntimeException(String.format(
-                "[Parser Error] Line %d: Недопустимая цель для присваивания.",
-                equals.position
+                "[Parser Error] Line %d, Column %d: Недопустимая цель для присваивания.",
+                equals.line,
+                equals.column
             ));
         }
 
@@ -213,6 +214,10 @@ public class Parser {
             return new NumberExpression(value);
         }
 
+        if (match(TokenType.STRING)) {
+            return new StringExpression(previous().value);
+        }
+
         if (match(TokenType.ID)) {
             return new VariableExpression(previous().value);
         }
@@ -224,8 +229,9 @@ public class Parser {
         }
 
         throw new RuntimeException(String.format(
-            "[Parser Error] Line %d: Ожидается выражение.",
-            peek().position
+            "[Parser Error] Line %d, Column %d: Ожидается выражение.",
+            peek().line,
+            peek().column
         ));
     }
 
@@ -265,8 +271,8 @@ public class Parser {
         if (check(type)) return advance();
         Token token = peek();
         throw new RuntimeException(String.format(
-            "[Parser Error] Line %d: %s",
-            token.position, message
+            "[Parser Error] Line %d, Column %d: %s",
+            token.line, token.column, message
         ));
     }
 }

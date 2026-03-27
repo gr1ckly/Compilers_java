@@ -10,12 +10,14 @@ public class SemanticEnvironment {
         private final String name;
         private final int line;
         private final int column;
+        private ValueType type;
         private boolean used;
 
-        public VariableInfo(String name, int line, int column) {
+        public VariableInfo(String name, int line, int column, ValueType type) {
             this.name = name;
             this.line = line;
             this.column = column;
+            this.type = type;
             this.used = false;
         }
 
@@ -33,6 +35,14 @@ public class SemanticEnvironment {
 
         public boolean isUsed() {
             return used;
+        }
+
+        public ValueType getType() {
+            return type;
+        }
+
+        public void setType(ValueType type) {
+            this.type = type;
         }
 
         private void markUsed() {
@@ -53,14 +63,18 @@ public class SemanticEnvironment {
     }
 
     public boolean defineVariable(String name) {
-        return defineVariable(name, -1, -1);
+        return defineVariable(name, -1, -1, ValueType.UNKNOWN);
     }
 
     public boolean defineVariable(String name, int line, int column) {
+        return defineVariable(name, line, column, ValueType.UNKNOWN);
+    }
+
+    public boolean defineVariable(String name, int line, int column, ValueType type) {
         if (variables.containsKey(name)) {
             return false;
         }
-        variables.put(name, new VariableInfo(name, line, column));
+        variables.put(name, new VariableInfo(name, line, column, type));
         return true;
     }
 
@@ -75,6 +89,10 @@ public class SemanticEnvironment {
         }
         info.markUsed();
         return true;
+    }
+
+    public VariableInfo getVariable(String name) {
+        return resolveVariable(name);
     }
 
     public List<VariableInfo> getUnusedVariablesInCurrentScope() {
